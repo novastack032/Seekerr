@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> Seekrr AI - Smart Item Recovery</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Seekrr AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section bg-gradient text-white py-5">
+        <div class="container text-center">
+            <h1 class="display-4 fw-bold mb-3">Lost Something? Found Something?</h1>
+            <p class="lead mb-4">AI Connects Them in Seconds</p>
+            <div class="row justify-content-center">
+                <div class="col-md-5 mb-3">
+                    <a href="/report_lost" class="btn btn-light btn-lg w-100 py-3">
+                        <i class="fas fa-exclamation-circle"></i> Report Lost Item
+                    </a>
+                </div>
+                <div class="col-md-5 mb-3">
+                    <a href="/report_found" class="btn btn-success btn-lg w-100 py-3">
+                        <i class="fas fa-check-circle"></i> Report Found Item
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="fas fa-box-open fa-3x text-primary mb-3"></i>
+                            <h3 class="fw-bold">{{ stats.total_lost }}</h3>
+                            <p class="text-muted mb-0">Items Reported Lost</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="fas fa-hands-helping fa-3x text-success mb-3"></i>
+                            <h3 class="fw-bold">{{ stats.total_found }}</h3>
+                            <p class="text-muted mb-0">Items Found</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="fas fa-link fa-3x text-info mb-3"></i>
+                            <h3 class="fw-bold">{{ stats.total_matches }}</h3>
+                            <p class="text-muted mb-0">AI Matches Created</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <div class="stat-card card border-0 shadow-sm h-100">
+                        <div class="card-body">
+                            <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+                            <h3 class="fw-bold">{{ stats.total_recovered }}</h3>
+                            <p class="text-muted mb-0">Successful Recoveries</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">How It Works</h2>
+            <div class="row">
+                <div class="col-md-3 text-center mb-4">
+                    <div class="step-icon bg-primary text-white rounded-circle mx-auto mb-3">
+                        <span class="step-number">1</span>
+                    </div>
+                    <h5 class="fw-bold">Report Item</h5>
+                    <p class="text-muted">Describe your lost or found item with details</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="step-icon bg-success text-white rounded-circle mx-auto mb-3">
+                        <span class="step-number">2</span>
+                    </div>
+                    <h5 class="fw-bold">AI Matches</h5>
+                    <p class="text-muted">Our AI finds potential matches instantly</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="step-icon bg-info text-white rounded-circle mx-auto mb-3">
+                        <span class="step-number">3</span>
+                    </div>
+                    <h5 class="fw-bold">Verify Identity</h5>
+                    <p class="text-muted">Both parties verify via OTP for security</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="step-icon bg-warning text-white rounded-circle mx-auto mb-3">
+                        <span class="step-number">4</span>
+                    </div>
+                    <h5 class="fw-bold">Reunite</h5>
+                    <p class="text-muted">Meet safely and recover your item</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Recoveries Section -->
+    {% if recent_recoveries %}
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">Recent Success Stories</h2>
+            <div class="row">
+                {% for recovery in recent_recoveries %}
+                <div class="col-md-6 mb-4">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="fas fa-check-circle text-success fa-2x me-3"></i>
+                                <div>
+                                    <h5 class="mb-0">{{ recovery.item_name }}</h5>
+                                    <small class="text-muted">{{ recovery.category }}</small>
+                                </div>
+                            </div>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-clock"></i> Recovered successfully
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Features Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center fw-bold mb-5">Why Choose Lost&Found AI?</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card text-center">
+                        <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                        <h5 class="fw-bold">AI-Powered Matching</h5>
+                        <p class="text-muted">Advanced NLP algorithms find the best matches with explainable confidence scores</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card text-center">
+                        <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
+                        <h5 class="fw-bold">Fraud Prevention</h5>
+                        <p class="text-muted">OTP-based verification ensures only legitimate claims are processed</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card text-center">
+                        <i class="fas fa-chart-line fa-3x text-info mb-3"></i>
+                        <h5 class="fw-bold">Smart Analytics</h5>
+                        <p class="text-muted">Identify loss patterns and hotspots to prevent future losses</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2026 Seekrr AI. Reuniting People with Their Belongings.</p>
+            <p class="mb-0">
+                <small>Built with Flask, scikit-learn & AI | Hackathon Project</small>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

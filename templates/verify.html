@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Handover - Lost&Found AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Lost&Found AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Verification Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'danger' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-warning text-dark">
+                            <h3 class="mb-0">
+                                <i class="fas fa-shield-alt"></i> Secure Handover Verification
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>Security Step:</strong> Both claimer and finder must verify their identity using OTP codes sent to their mobile numbers.
+                            </div>
+
+                            <!-- Status Display -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <div class="card {% if verification.claimer_verified %}border-success{% else %}border-warning{% endif %}">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user fa-3x {% if verification.claimer_verified %}text-success{% else %}text-warning{% endif %} mb-2"></i>
+                                            <h5>Claimer</h5>
+                                            {% if verification.claimer_verified %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Verified
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card {% if verification.finder_verified %}border-success{% else %}border-warning{% endif %}">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-user-shield fa-3x {% if verification.finder_verified %}text-success{% else %}text-warning{% endif %} mb-2"></i>
+                                            <h5>Finder</h5>
+                                            {% if verification.finder_verified %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check"></i> Verified
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- FOR HACKATHON DEMO: Display OTPs -->
+                            <div class="alert alert-warning mb-4">
+                                <h5 class="alert-heading">
+                                    <i class="fas fa-laptop-code"></i> Demo Mode - OTP Codes
+                                </h5>
+                                <p class="mb-2">
+                                    <strong>Claimer OTP:</strong> 
+                                    <code class="fs-4">{{ verification.claimer_otp }}</code>
+                                </p>
+                                <p class="mb-0">
+                                    <strong>Finder OTP:</strong> 
+                                    <code class="fs-4">{{ verification.finder_otp }}</code>
+                                </p>
+                                <hr>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> In production, these would be sent via SMS
+                                </small>
+                            </div>
+
+                            {% if not (verification.claimer_verified and verification.finder_verified) %}
+                            <!-- Claimer Verification Form -->
+                            {% if not verification.claimer_verified %}
+                            <div class="card mb-4 border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h5 class="mb-0">Claimer Verification</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST">
+                                        <input type="hidden" name="user_type" value="claimer">
+                                        <div class="mb-3">
+                                            <label for="claimer_otp" class="form-label fw-bold">
+                                                Enter OTP sent to claimer's phone
+                                            </label>
+                                            <input type="text" class="form-control form-control-lg text-center" 
+                                                   id="claimer_otp" name="otp" 
+                                                   placeholder="Enter 6-digit OTP" 
+                                                   pattern="[0-9]{6}" 
+                                                   maxlength="6" 
+                                                   required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                                            <i class="fas fa-check"></i> Verify Claimer
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Finder Verification Form -->
+                            {% if not verification.finder_verified %}
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="mb-0">Finder Verification</h5>
+                                </div>
+                                <div class="card-body">
+                                    <form method="POST">
+                                        <input type="hidden" name="user_type" value="finder">
+                                        <div class="mb-3">
+                                            <label for="finder_otp" class="form-label fw-bold">
+                                                Enter OTP sent to finder's phone
+                                            </label>
+                                            <input type="text" class="form-control form-control-lg text-center" 
+                                                   id="finder_otp" name="otp" 
+                                                   placeholder="Enter 6-digit OTP" 
+                                                   pattern="[0-9]{6}" 
+                                                   maxlength="6" 
+                                                   required>
+                                        </div>
+                                        <button type="submit" class="btn btn-success btn-lg w-100">
+                                            <i class="fas fa-check"></i> Verify Finder
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <!-- Both Verified -->
+                            <div class="text-center py-5">
+                                <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                                <h3 class="text-success fw-bold">Both Parties Verified!</h3>
+                                <p class="lead mb-4">You can now proceed with the handover.</p>
+                                <a href="/timeline/{{ verification.match_id }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-timeline"></i> View Recovery Timeline
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Safety Guidelines -->
+                    <div class="card mt-4 border-info">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-shield-alt text-info"></i> Safe Handover Guidelines
+                            </h5>
+                            <ul class="mb-0">
+                                <li>Meet in a public, well-lit location (campus security office, cafeteria, etc.)</li>
+                                <li>Both parties should verify OTPs before the handover</li>
+                                <li>Claimer should describe the item before seeing it</li>
+                                <li>Bring a friend or inform someone about the meeting</li>
+                                <li>Check the item carefully before accepting</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Lost&Found AI. Reuniting People with Their Belongings.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Auto-focus on OTP input
+        document.addEventListener('DOMContentLoaded', function() {
+            const otpInputs = document.querySelectorAll('input[type="text"][pattern="[0-9]{6}"]');
+            if (otpInputs.length > 0) {
+                otpInputs[0].focus();
+            }
+        });
+    </script>
+</body>
+</html>

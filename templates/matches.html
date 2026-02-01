@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Results - Lost&Found AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Lost&Found AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Results Section -->
+    <section class="py-5">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'danger' }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Your Item Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-box"></i> Your {{ item_type|capitalize }} Item
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold">{{ item.item_name }}</h5>
+                            <p class="mb-2"><strong>Category:</strong> {{ item.category }}</p>
+                            <p class="mb-2"><strong>Description:</strong> {{ item.description }}</p>
+                            {% if item.color %}
+                            <p class="mb-2"><strong>Color:</strong> {{ item.color }}</p>
+                            {% endif %}
+                            <p class="mb-2">
+                                <strong>Location:</strong> 
+                                {% if item_type == 'lost' %}
+                                    {{ item.location }}
+                                {% else %}
+                                    {{ item.found_location }}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-4">
+                            {% if item.photo_path %}
+                            <img src="{{ url_for('static', filename=item.photo_path) }}" 
+                                 class="img-fluid rounded" alt="Item photo">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Results -->
+            {% if matches %}
+            <h3 class="fw-bold mb-4">
+                <i class="fas fa-link"></i> AI Found {{ matches|length }} Potential Match{{ 'es' if matches|length > 1 else '' }}
+            </h3>
+
+            {% for match in matches %}
+            <div class="card shadow-sm mb-4 match-card">
+                <div class="card-header {% if match.confidence_score >= 80 %}bg-success{% elif match.confidence_score >= 60 %}bg-warning{% else %}bg-secondary{% endif %} text-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h5 class="mb-0">Match #{{ loop.index }}</h5>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <h4 class="mb-0">
+                                <span class="badge bg-light text-dark">
+                                    {{ "%.0f"|format(match.confidence_score) }}% Match
+                                </span>
+                            </h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <h5 class="fw-bold">{{ match.item_name }}</h5>
+                            <p class="mb-2"><strong>Category:</strong> {{ match.category }}</p>
+                            <p class="mb-2"><strong>Description:</strong> {{ match.description }}</p>
+                            {% if match.color %}
+                            <p class="mb-2"><strong>Color:</strong> {{ match.color }}</p>
+                            {% endif %}
+                            <p class="mb-2">
+                                <strong>Location:</strong> 
+                                {% if item_type == 'lost' %}
+                                    {{ match.found_location }}
+                                {% else %}
+                                    {{ match.location }}
+                                {% endif %}
+                            </p>
+                            
+                            <!-- Explainability Section -->
+                            <div class="mt-3 p-3 bg-light rounded">
+                                <h6 class="fw-bold mb-3">
+                                    <i class="fas fa-info-circle"></i> Why This Match?
+                                </h6>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="progress mb-2" style="height: 20px;">
+                                                <div class="progress-bar {% if match.category_score >= 80 %}bg-success{% elif match.category_score >= 50 %}bg-warning{% else %}bg-secondary{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ match.category_score }}%">
+                                                    {{ "%.0f"|format(match.category_score) }}%
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Category Match</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="progress mb-2" style="height: 20px;">
+                                                <div class="progress-bar {% if match.location_score >= 80 %}bg-success{% elif match.location_score >= 50 %}bg-warning{% else %}bg-secondary{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ match.location_score }}%">
+                                                    {{ "%.0f"|format(match.location_score) }}%
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Location Proximity</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="text-center">
+                                            <div class="progress mb-2" style="height: 20px;">
+                                                <div class="progress-bar {% if match.description_score >= 80 %}bg-success{% elif match.description_score >= 50 %}bg-warning{% else %}bg-secondary{% endif %}" 
+                                                     role="progressbar" 
+                                                     style="width: {{ match.description_score }}%">
+                                                    {{ "%.0f"|format(match.description_score) }}%
+                                                </div>
+                                            </div>
+                                            <small class="text-muted">Description Similarity</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    {% if match.confidence_score >= 80 %}
+                                    <p class="mb-0 text-success fw-bold">
+                                        <i class="fas fa-check-circle"></i> Strong match - highly likely to be your item
+                                    </p>
+                                    {% elif match.confidence_score >= 60 %}
+                                    <p class="mb-0 text-warning fw-bold">
+                                        <i class="fas fa-exclamation-circle"></i> Good match - worth investigating
+                                    </p>
+                                    {% else %}
+                                    <p class="mb-0 text-secondary fw-bold">
+                                        <i class="fas fa-info-circle"></i> Possible match - check carefully
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            {% if item_type == 'lost' %}
+                            <div class="mt-3">
+                                <a href="/claim/{{ match.match_id }}" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-hand-paper"></i> Claim This Item
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            {% if match.photo_path %}
+                            <img src="{{ url_for('static', filename=match.photo_path) }}" 
+                                 class="img-fluid rounded" alt="Match photo">
+                            {% else %}
+                            <div class="text-center p-4 bg-light rounded">
+                                <i class="fas fa-image fa-4x text-muted"></i>
+                                <p class="mt-2 text-muted">No photo available</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            {% else %}
+            <!-- No Matches -->
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-5x text-muted mb-4"></i>
+                <h3>No Matches Found Yet</h3>
+                <p class="text-muted mb-4">
+                    Don't worry! We'll notify you when a matching item is reported.
+                </p>
+                <a href="/" class="btn btn-primary">Return to Home</a>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Lost&Found AI. Reuniting People with Their Belongings.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

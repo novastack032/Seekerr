@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Lost Item - Lost&Found AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Lost&Found AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Form Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card shadow-lg border-0">
+                        <div class="card-header bg-danger text-white">
+                            <h3 class="mb-0"><i class="fas fa-exclamation-circle"></i> Report Lost Item</h3>
+                        </div>
+                        <div class="card-body p-4">
+                            {% with messages = get_flashed_messages(with_categories=true) %}
+                                {% if messages %}
+                                    {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'danger' }} alert-dismissible fade show" role="alert">
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                    </div>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+
+                            <p class="text-muted mb-4">
+                                Fill in the details below. Our AI will immediately search for matching found items.
+                            </p>
+
+                            <form method="POST" enctype="multipart/form-data" id="lostItemForm">
+                                <!-- Item Category -->
+                                <div class="mb-4">
+                                    <label for="category" class="form-label fw-bold">
+                                        Item Category <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="category" name="category" required>
+                                        <option value="">-- Select Category --</option>
+                                        <option value="Phone">Phone/Mobile</option>
+                                        <option value="Wallet">Wallet/Purse</option>
+                                        <option value="Keys">Keys</option>
+                                        <option value="Bag">Bag/Backpack</option>
+                                        <option value="Documents">Documents/ID</option>
+                                        <option value="Electronics">Electronics</option>
+                                        <option value="Jewelry">Jewelry</option>
+                                        <option value="Clothing">Clothing</option>
+                                        <option value="Books">Books/Notebooks</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+
+                                <!-- Item Name -->
+                                <div class="mb-4">
+                                    <label for="item_name" class="form-label fw-bold">
+                                        Item Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="item_name" name="item_name" 
+                                           placeholder="e.g., iPhone 13, Black Leather Wallet" required>
+                                </div>
+
+                                <!-- Description -->
+                                <div class="mb-4">
+                                    <label for="description" class="form-label fw-bold">
+                                        Detailed Description <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea class="form-control" id="description" name="description" rows="4" 
+                                              placeholder="Describe your item in detail (brand, model, unique features, contents, etc.)" 
+                                              required></textarea>
+                                    <small class="text-muted">Be specific - better descriptions lead to better matches!</small>
+                                </div>
+
+                                <!-- Color -->
+                                <div class="mb-4">
+                                    <label for="color" class="form-label fw-bold">
+                                        Color(s)
+                                    </label>
+                                    <input type="text" class="form-control" id="color" name="color" 
+                                           placeholder="e.g., Black, Blue and White">
+                                </div>
+
+                                <!-- Location -->
+                                <div class="mb-4">
+                                    <label for="location" class="form-label fw-bold">
+                                        Where did you lose it? <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="location" name="location" 
+                                           placeholder="e.g., Library Block-A, Main Campus Cafeteria" required>
+                                </div>
+
+                                <!-- Lost Date -->
+                                <div class="mb-4">
+                                    <label for="lost_date" class="form-label fw-bold">
+                                        When did you lose it? <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="datetime-local" class="form-control" id="lost_date" name="lost_date" required>
+                                </div>
+
+                                <!-- Contact Information -->
+                                <h5 class="fw-bold mb-3 mt-4">Your Contact Information</h5>
+                                
+                                <div class="mb-4">
+                                    <label for="contact_name" class="form-label fw-bold">
+                                        Your Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="contact_name" name="contact_name" 
+                                           placeholder="Full Name" required>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="contact_phone" class="form-label fw-bold">
+                                        Phone Number <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="tel" class="form-control" id="contact_phone" name="contact_phone" 
+                                           placeholder="10-digit mobile number" pattern="[0-9]{10}" required>
+                                    <small class="text-muted">Required for OTP verification</small>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label for="contact_email" class="form-label fw-bold">
+                                        Email Address
+                                    </label>
+                                    <input type="email" class="form-control" id="contact_email" name="contact_email" 
+                                           placeholder="your.email@example.com">
+                                </div>
+
+                                <!-- Photo Upload -->
+                                <div class="mb-4">
+                                    <label for="photo" class="form-label fw-bold">
+                                        Upload Photo (Optional)
+                                    </label>
+                                    <input type="file" class="form-control" id="photo" name="photo" 
+                                           accept="image/*">
+                                    <small class="text-muted">Helps in visual identification</small>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-danger btn-lg">
+                                        <i class="fas fa-search"></i> Report Lost Item & Find Matches
+                                    </button>
+                                    <a href="/" class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Tips Card -->
+                    <div class="card mt-4 border-info">
+                        <div class="card-body">
+                            <h5 class="card-title"><i class="fas fa-lightbulb text-warning"></i> Tips for Better Matches</h5>
+                            <ul class="mb-0">
+                                <li>Be as specific as possible in your description</li>
+                                <li>Include brand names, models, and unique identifiers</li>
+                                <li>Mention any distinguishing features or damage</li>
+                                <li>Double-check the location and time details</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Lost&Found AI. Reuniting People with Their Belongings.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

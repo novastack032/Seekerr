@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recovery Timeline - Lost&Found AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Lost&Found AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Timeline Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-10">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                            <div class="alert alert-{{ 'success' if category == 'success' else 'info' if category == 'info' else 'danger' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <div class="card shadow-lg border-0 mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h3 class="mb-0">
+                                <i class="fas fa-route"></i> Recovery Journey
+                            </h3>
+                        </div>
+                        <div class="card-body p-4">
+                            <!-- Item Info -->
+                            <div class="row mb-4">
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3">Lost Item Details</h5>
+                                    <p class="mb-2">
+                                        <strong>Item:</strong> {{ match.lost_item_name }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Category:</strong> {{ match.lost_category }}
+                                    </p>
+                                    <p class="mb-2">
+                                        <strong>Lost at:</strong> {{ match.lost_location }}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h5 class="fw-bold mb-3">Match Confidence</h5>
+                                    <div class="text-center">
+                                        <div class="circular-progress mb-2">
+                                            <h2 class="fw-bold text-success">
+                                                {{ "%.0f"|format(match.confidence_score) }}%
+                                            </h2>
+                                        </div>
+                                        <p class="text-muted">AI Confidence Score</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <hr>
+
+                            <!-- Timeline -->
+                            <h5 class="fw-bold mb-4 mt-4">
+                                <i class="fas fa-clock"></i> Recovery Timeline
+                            </h5>
+                            
+                            <div class="timeline">
+                                {% for event in timeline %}
+                                <div class="timeline-item {% if event.status == 'completed' %}completed{% else %}in-progress{% endif %}">
+                                    <div class="timeline-marker">
+                                        {% if event.status == 'completed' %}
+                                        <i class="fas fa-check-circle"></i>
+                                        {% else %}
+                                        <i class="fas fa-circle"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="timeline-content">
+                                        <h6 class="fw-bold mb-1">{{ event.event }}</h6>
+                                        <p class="text-muted mb-1">
+                                            <i class="fas fa-calendar"></i> 
+                                            {{ event.timestamp }}
+                                        </p>
+                                        {% if event.details %}
+                                        <p class="mb-0">
+                                            <small>{{ event.details }}</small>
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="mt-4 text-center">
+                                {% if match.status == 'verified' %}
+                                <a href="/mark_recovered/{{ match.id }}" class="btn btn-success btn-lg">
+                                    <i class="fas fa-check-circle"></i> Mark as Successfully Recovered
+                                </a>
+                                {% elif match.status == 'recovered' %}
+                                <div class="alert alert-success">
+                                    <h5>
+                                        <i class="fas fa-trophy"></i> Item Successfully Recovered!
+                                    </h5>
+                                    <p class="mb-0">Thank you for using Lost&Found AI.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Share Success Story -->
+                    {% if match.status == 'recovered' %}
+                    <div class="card border-success">
+                        <div class="card-body text-center">
+                            <h5 class="card-title">
+                                <i class="fas fa-share-alt text-success"></i> Share Your Success Story
+                            </h5>
+                            <p class="text-muted">
+                                Help others discover Lost&Found AI by sharing your recovery story!
+                            </p>
+                            <button class="btn btn-outline-success">
+                                <i class="fab fa-twitter"></i> Share on Twitter
+                            </button>
+                            <button class="btn btn-outline-success">
+                                <i class="fab fa-facebook"></i> Share on Facebook
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Lost&Found AI. Reuniting People with Their Belongings.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

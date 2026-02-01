@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Items - Lost&Found AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Lost&Found AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="fw-bold mb-4">
+                <i class="fas fa-user"></i> My Dashboard
+            </h2>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="lost-tab" data-bs-toggle="tab" data-bs-target="#lost" type="button" role="tab">
+                        <i class="fas fa-exclamation-circle"></i> My Lost Items
+                        <span class="badge bg-danger">{{ lost_items|length }}</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="found-tab" data-bs-toggle="tab" data-bs-target="#found" type="button" role="tab">
+                        <i class="fas fa-check-circle"></i> My Found Items
+                        <span class="badge bg-success">{{ found_items|length }}</span>
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="myTabContent">
+                <!-- Lost Items Tab -->
+                <div class="tab-pane fade show active" id="lost" role="tabpanel">
+                    {% if lost_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Location</th>
+                                    <th>Date Lost</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in lost_items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.item_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ item.description[:50] }}...</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ item.category }}</span>
+                                    </td>
+                                    <td>{{ item.location }}</td>
+                                    <td>{{ item.lost_date[:10] }}</td>
+                                    <td>
+                                        {% if item.status == 'active' %}
+                                        <span class="badge bg-warning text-dark">Active</span>
+                                        {% elif item.status == 'matched' %}
+                                        <span class="badge bg-info">Matched</span>
+                                        {% else %}
+                                        <span class="badge bg-success">Recovered</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/matches?lost_item_id={{ item.id }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-search"></i> View Matches
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Lost Items</h4>
+                        <p class="text-muted mb-4">You haven't reported any lost items yet.</p>
+                        <a href="/report_lost" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Report Lost Item
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Found Items Tab -->
+                <div class="tab-pane fade" id="found" role="tabpanel">
+                    {% if found_items %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Category</th>
+                                    <th>Found Location</th>
+                                    <th>Date Found</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in found_items %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ item.item_name }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ item.description[:50] }}...</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">{{ item.category }}</span>
+                                    </td>
+                                    <td>{{ item.found_location }}</td>
+                                    <td>{{ item.found_date[:10] }}</td>
+                                    <td>
+                                        {% if item.status == 'active' %}
+                                        <span class="badge bg-warning text-dark">Active</span>
+                                        {% elif item.status == 'matched' %}
+                                        <span class="badge bg-info">Matched</span>
+                                        {% else %}
+                                        <span class="badge bg-success">Returned</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="/matches?found_item_id={{ item.id }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fas fa-search"></i> View Matches
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-5x text-muted mb-3"></i>
+                        <h4 class="text-muted">No Found Items</h4>
+                        <p class="text-muted mb-4">You haven't reported any found items yet.</p>
+                        <a href="/report_found" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Report Found Item
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Lost&Found AI. Reuniting People with Their Belongings.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

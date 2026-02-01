@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Lost&Found AI</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-search-location"></i> Lost&Found AI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/my_items">My Items</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/analytics">Analytics</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Analytics Section -->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h1 class="fw-bold">
+                    <i class="fas fa-chart-line"></i> Loss Pattern Analytics
+                </h1>
+                <p class="lead text-muted">
+                    Data-driven insights to prevent future losses
+                </p>
+            </div>
+
+            <!-- Key Metrics Row -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-percentage fa-3x text-success mb-3"></i>
+                            <h2 class="fw-bold text-success">{{ recovery_rate.rate }}%</h2>
+                            <p class="text-muted mb-0">Recovery Success Rate</p>
+                            <small class="text-muted">
+                                {{ recovery_rate.recovered }} out of {{ recovery_rate.total }} items recovered
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-clock fa-3x text-info mb-3"></i>
+                            <h2 class="fw-bold text-info">{{ time_to_recovery.hours }} hrs</h2>
+                            <p class="text-muted mb-0">Average Time to Recovery</p>
+                            <small class="text-muted">
+                                Approximately {{ time_to_recovery.days }} day{{ 's' if time_to_recovery.days > 1 else '' }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Row 1 -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="fas fa-list"></i> Most Commonly Lost Items
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="categoryChart"></canvas>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Helps identify which items need better tracking
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-6 mb-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0 fw-bold">
+                                <i class="fas fa-map-marker-alt"></i> Loss Hotspots
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="locationChart"></canvas>
+                        </div>
+                        <div class="card-footer bg-light">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> 
+                                Locations where items are most frequently lost
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Insights Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-lightbulb"></i> Key Insights & Recommendations
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary">
+                                <i class="fas fa-exclamation-triangle"></i> High-Risk Areas
+                            </h6>
+                            <ul class="list-unstyled">
+                                {% if location_stats.labels %}
+                                    {% for location in location_stats.labels[:3] %}
+                                    <li class="mb-2">
+                                        <i class="fas fa-map-pin text-danger"></i> 
+                                        <strong>{{ location }}</strong> - Install more Lost&Found collection points
+                                    </li>
+                                    {% endfor %}
+                                {% else %}
+                                <li class="text-muted">No data available yet</li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-success">
+                                <i class="fas fa-shield-alt"></i> Prevention Tips
+                            </h6>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-tag text-success"></i> 
+                                    Label valuable items with contact information
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-bell text-success"></i> 
+                                    Set reminders before leaving high-risk areas
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-box text-success"></i> 
+                                    Use designated storage areas in cafeteria/library
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 Lost&Found AI. Reuniting People with Their Belongings.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Category Distribution Chart
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+        const categoryChart = new Chart(categoryCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ category_stats.labels | tojson }},
+                datasets: [{
+                    label: 'Number of Lost Items',
+                    data: {{ category_stats.data | tojson }},
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(75, 192, 192, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(153, 102, 255, 0.6)',
+                        'rgba(255, 159, 64, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Location Hotspots Chart
+        const locationCtx = document.getElementById('locationChart').getContext('2d');
+        const locationChart = new Chart(locationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: {{ location_stats.labels | tojson }},
+                datasets: [{
+                    label: 'Items Lost',
+                    data: {{ location_stats.data | tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',
+                        'rgba(54, 162, 235, 0.7)',
+                        'rgba(255, 206, 86, 0.7)',
+                        'rgba(75, 192, 192, 0.7)',
+                        'rgba(153, 102, 255, 0.7)',
+                        'rgba(255, 159, 64, 0.7)',
+                        'rgba(201, 203, 207, 0.7)',
+                        'rgba(255, 99, 71, 0.7)',
+                        'rgba(60, 179, 113, 0.7)',
+                        'rgba(106, 90, 205, 0.7)'
+                    ],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
